@@ -52,32 +52,44 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun BienvenidaContenido(
     onEntrarClick: () -> Unit,
     onCrearCuentaClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize()
     ) {
+
+        // Imagen de fondo
         Image(
             painter = painterResource(R.drawable.mesa_inicio),
             contentDescription = "Imagen de fondo",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-    }
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.offset(x = 95.dp, y = 300.dp)
-    ) {
+        // Texto de bienvenida
+        Text(
+            text = "¡Bienvenido/a!",
+            fontSize = 28.sp,
+            textAlign = TextAlign.Center,
+            fontStyle = FontStyle.Normal,
+            color = Color.White,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 150.dp)
+        )
+
+        // Botones
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp),
-            modifier = Modifier.padding(30.dp)
+            modifier = Modifier.align(Alignment.Center)
         ) {
+
             FilledTonalButton(
                 onClick = onEntrarClick,
                 modifier = Modifier.size(150.dp, 50.dp),
@@ -85,7 +97,6 @@ fun BienvenidaContenido(
                     containerColor = Color.White,
                     contentColor = Color.Black
                 )
-
             ) {
                 Text(
                     text = "Entrar",
@@ -102,29 +113,14 @@ fun BienvenidaContenido(
                 )
             ) {
                 Text(
-                    text="Crear cuenta",
-                    color=Color.Red
+                    text = "Crear cuenta",
+                    color = Color.Red
                 )
             }
         }
     }
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Text(
-            fontSize = 28.sp,
-            text = "¡Bienvenido/a!",
-            textAlign = TextAlign.Center,
-            fontStyle = FontStyle.Normal,
-            color = Color.White,
-            fontWeight = FontWeight.Black,
-            modifier = Modifier.offset(x = 5.dp, y = 150.dp)
-        )
-    }
-
 }
+
 
 @Composable
 fun BienvenidaNavegacion(navController: NavController) {

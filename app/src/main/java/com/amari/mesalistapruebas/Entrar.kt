@@ -220,7 +220,7 @@ fun EntrarContenido(
         // Comprobar que el usuario está en la base de datos.
         //Haremos este ejemplo
         var valido: Boolean = false
-        if ((usuario == "usuario") && contraseña=="usuario") {
+        if (usuario == "usuario" && contraseña=="usuario") {
             valido = true
         }
         return valido

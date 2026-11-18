@@ -237,13 +237,8 @@ fun RegistroNavegacion(navController: NavController){
         },
 
 
-
-
-
-
         // Si apretamos el boton de Iniciar Sesión nos vamos a iniciar sesión
         onIniciarSesionClick = {navController.navigate("entrar")}
-
 
     )
 }
