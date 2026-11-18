@@ -1,6 +1,8 @@
 
 package com.amari.mesalistapruebas
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -17,33 +19,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.amari.mesalistapruebas.ui.BottomNavigationBar
 import com.amari.mesalistapruebas.ui.theme.PantallaInicioNavegacion
+import com.amari.mesalistapruebas.ReservarNavegacion
+import com.amari.mesalistapruebas.ReservarScreen
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
 
     val navController = rememberNavController()
 
-    // Averiguamos en qué pantalla estamos
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val rutaActual = navBackStackEntry?.destination?.route
 
-    // Pantallas en las que NO queremos mostrar la barra
     val rutasSinBarra = listOf(
         "bienvenida",
         "entrar",
         "registro"
     )
 
-
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
     ) {
 
-        // Contenido de las pantallas
+        // CONTENIDO DE LAS PANTALLAS
         NavHost(
             navController = navController,
             startDestination = "bienvenida",
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .padding(
+                    bottom = if (rutaActual !in rutasSinBarra) 85.dp else 0.dp
+                )
         ) {
 
             composable("bienvenida") {
@@ -63,7 +72,7 @@ fun AppNavigation() {
             }
 
             composable("reservar") {
-                // ReservasNavegacion(navController)
+                ReservarNavegacion(navController)
             }
 
             composable("reservas") {
@@ -83,7 +92,7 @@ fun AppNavigation() {
             }
         }
 
-        // Barra inferior flotante
+        // BARRA DE NAVEGACIÓN PERSONALIZADA
         if (rutaActual !in rutasSinBarra) {
 
             Box(
@@ -92,17 +101,13 @@ fun AppNavigation() {
                     .navigationBarsPadding()
                     .padding(bottom = 8.dp)
             ) {
-
                 BottomNavigationBar(
                     selectedRoute = rutaActual ?: "inicio",
                     onItemSelected = { ruta ->
-
                         navController.navigate(ruta) {
-
                             popUpTo("inicio") {
                                 saveState = true
                             }
-
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -111,5 +116,5 @@ fun AppNavigation() {
             }
         }
     }
-
 }
+

@@ -40,7 +40,7 @@ fun PantallaInicioContenido(
 
         // Imagen de fondo
         Image(
-            painter = painterResource(R.drawable.mesa_inicio),
+            painter = painterResource(R.drawable.fondo_marron),
             contentDescription = "Imagen de fondo",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -77,7 +77,7 @@ fun PantallaInicioContenido(
                     text = "Reservar",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Red
+                    color = Color(0xFF5D4037)
                 )
             }
 
@@ -96,7 +96,7 @@ fun PantallaInicioContenido(
                     text = "Ver reservas",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Red
+                    color = Color(0xFF5D4037)
                 )
             }
 
@@ -115,7 +115,7 @@ fun PantallaInicioContenido(
                     text = "Añadir reserva",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Red
+                    color = Color(0xFF5D4037)
                 )
             }
         }
@@ -130,7 +130,7 @@ fun PantallaInicioNavegacion(navController: NavController) {
 
         // Botón Reservar
         onReservarClick = {
-            navController.navigate("reservas")
+            navController.navigate("reservar")
         },
 
         // Botón Ver reservas

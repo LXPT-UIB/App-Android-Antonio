@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -74,6 +75,9 @@ fun EntrarContenido(
         ) {
             OutlinedTextField(
                 value = textoUsuario,
+                textStyle = TextStyle(
+                    color = Color.White
+                ),
                 onValueChange = { textoUsuario = it },
                 singleLine = true,
                 label = {
@@ -94,6 +98,9 @@ fun EntrarContenido(
 
             OutlinedTextField(
                 value = textoContrasena,
+                textStyle = TextStyle(
+                    color = Color.White
+                ),
                 singleLine = true,
                 onValueChange = { textoContrasena = it },
                 visualTransformation = PasswordVisualTransformation(),
