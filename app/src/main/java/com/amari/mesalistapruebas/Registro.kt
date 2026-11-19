@@ -39,7 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 @Composable
 fun RegistroContenido(
@@ -230,43 +231,91 @@ fun RegistroContenido(
 
 }
 
+
 @Composable
-fun RegistroNavegacion(navController: NavController){
-    var mensajeError by remember {
-        mutableStateOf("")
+fun RegistroNavegacion(navController: NavController) {
+
+    var mensajeError by remember { mutableStateOf("") }
+    var cargando by remember { mutableStateOf(false) }
+
+    val repository = remember {
+        com.amari.mesalistapruebas.data.repository.AuthRepository()
     }
+
+    val scope = rememberCoroutineScope()
+
     RegistroContenido(
-        mensajeError=mensajeError,
-        // Si apretamos el botón Crear cuenta, mirmamos que los datos son válidos e iniciamos sesión
-        onCrearCuentaClick = {correo,usuario,telefono,contraseña ->
+        mensajeError = mensajeError,
 
-            if(comprobacion(correo,usuario,telefono,contraseña)){
-                navController.navigate("inicio")
-            }else{
-                //Si el usuario no es válido ponemos mensaje de error y nos quedamos en la misma pantalla
-                mensajeError = "Los datos introducidos son incorrectos"
+        onCrearCuentaClick = { correo, usuario, telefono, contrasena ->
+
+            // Evitamos enviar otra petición mientras hay una en curso
+            if (!cargando) {
+
+                scope.launch {
+
+                    mensajeError = ""
+
+                    // Comprobaciones básicas
+                    when {
+                        correo.isBlank() ||
+                                usuario.isBlank() ||
+                                telefono.isBlank() ||
+                                contrasena.isBlank() -> {
+
+                            mensajeError = "Todos los campos son obligatorios"
+                        }
+
+                        usuario.length > 80 -> {
+
+                            mensajeError = "El nombre no puede superar 80 caracteres"
+                        }
+
+                        contrasena.length < 10 -> {
+
+                            mensajeError = "La contraseña debe tener al menos 10 caracteres"
+                        }
+
+                        else -> {
+
+                            cargando = true
+
+                            val resultado = repository.registrarUsuario(
+                                name = usuario,
+                                email = correo,
+                                phone = telefono,
+                                password = contrasena
+                            )
+
+                            resultado.onSuccess { respuesta ->
+
+                                // Registro correcto
+                                // El servidor ya nos ha devuelto el usuario y el token
+
+                                navController.navigate("inicio") {
+                                    popUpTo("registro") {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+
+                            resultado.onFailure { error ->
+
+                                mensajeError = error.message
+                                    ?: "No se pudo crear la cuenta"
+                            }
+
+                            cargando = false
+                        }
+                    }
+                }
             }
-
         },
 
-
-        // Si apretamos el boton de Iniciar Sesión nos vamos a iniciar sesión
-        onIniciarSesionClick = {navController.navigate("entrar")}
-
-    )
-}
-
-
-
-fun comprobacion(correo:String,nombre:String,telefono:String,contraseña:String): Boolean {
-    var valido: Boolean=false
-        //Se distingue entre mayúscula y minuscula
-        if(correo=="Antonio" && nombre=="Antonio" && telefono=="1234" && contraseña=="1234"){
-            valido=true
+        onIniciarSesionClick = {
+            navController.navigate("entrar")
         }
-
-    return valido
-
+    )
 }
 
 

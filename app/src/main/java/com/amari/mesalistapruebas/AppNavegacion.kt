@@ -69,8 +69,8 @@ fun AppNavigation() {
             }
 
             composable("inicio") {
-                //PantallaInicioNavegacion(navController)
-                ApiTestScreen()
+                PantallaInicioNavegacion(navController)
+
             }
 
             composable("reservar") {

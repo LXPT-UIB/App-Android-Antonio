@@ -39,7 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.amari.mesalistapruebas.ui.theme.MesaListaPruebasTheme
-
+import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
+import com.amari.mesalistapruebas.data.repository.AuthRepository
 @Composable
 fun EntrarContenido(
         onEntrarClick: (String, String) -> Unit,
@@ -82,7 +84,7 @@ fun EntrarContenido(
                 singleLine = true,
                 label = {
                     Text(
-                        text = "Usuario",
+                        text = "Correo Electrónico",
                         color = Color.White
                     )
                 },
@@ -197,41 +199,60 @@ fun EntrarContenido(
     @Composable
     fun EntrarNavegacion(navController: NavController) {
 
-        var mensajeError by remember {
-            mutableStateOf("")
-        }
+        var mensajeError by remember { mutableStateOf("") }
+        var cargando by remember { mutableStateOf(false) }
+
+        val repository = remember { AuthRepository() }
+        val scope = rememberCoroutineScope()
 
         EntrarContenido(
             mensajeError = mensajeError,
-            onEntrarClick = { usuario, contraseña ->
 
-                if (usuarioValido(usuario, contraseña)) {
-                    //Si el usuario es válido no ponemos mensaje de error y nos vamos a la pantalla inicio
+            onEntrarClick = { correo, contrasena ->
+
+                scope.launch {
+
+                    cargando = true
                     mensajeError = ""
-                    navController.navigate("inicio")
-                } else {
-                    //Si el usuario no es válido ponemos mensaje de error y nos quedamos en la misma pantalla
-                    mensajeError = "Usuario o contraseña incorrectos"
+
+                    val resultado = repository.iniciarSesion(
+                        email = correo,
+                        password = contrasena
+                    )
+
+                    resultado.onSuccess { respuesta ->
+
+                        // Inicio de sesión correcto
+                        // Aquí recibimos el token de sesión
+
+                        navController.navigate("inicio") {
+                            popUpTo("entrar") {
+                                inclusive = true
+                            }
+                        }
+                    }
+
+                    resultado.onFailure { error ->
+                        mensajeError = error.message
+                            ?: "No se pudo iniciar sesión"
+                    }
+
+                    cargando = false
                 }
             },
+
             onCrearCuentaClick = {
                 navController.navigate("registro")
             },
+
             onOlvideContrasenaClick = {
-                navController.navigate("recuperar")
+                // Pendiente de implementar
             }
         )
     }
 
-    private fun usuarioValido(usuario: String, contraseña: String): Boolean {
-        // Comprobar que el usuario está en la base de datos.
-        //Haremos este ejemplo
-        var valido: Boolean = false
-        if (usuario == "usuario" && contraseña=="usuario") {
-            valido = true
-        }
-        return valido
-    }
+
+
 
     @Preview(showBackground = true)
     @Composable

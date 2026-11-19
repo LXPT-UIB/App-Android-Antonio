@@ -1,0 +1,123 @@
+package com.amari.mesalistapruebas.data.repository
+
+import com.amari.mesalistapruebas.data.model.AuthResponse
+import com.amari.mesalistapruebas.data.model.LoginRequest
+import com.amari.mesalistapruebas.data.model.RegisterRequest
+import com.amari.mesalistapruebas.data.remote.RetrofitClient
+import org.json.JSONObject
+class AuthRepository {
+
+    private val api = RetrofitClient.api
+
+    // Iniciar sesión
+    suspend fun iniciarSesion(
+        email: String,
+        password: String
+    ): Result<AuthResponse> {
+
+        return try {
+            val respuesta = api.iniciarSesion(
+                LoginRequest(email, password)
+            )
+
+            if (respuesta.isSuccessful) {
+                val datos = respuesta.body()
+
+                if (datos != null) {
+                    Result.success(datos)
+                } else {
+                    Result.failure(
+                        Exception("El servidor no ha devuelto datos")
+                    )
+                }
+            } else {
+                Result.failure(
+                    Exception(
+                        obtenerMensajeError(
+                            respuesta.code(),
+                            respuesta.errorBody()?.string()
+                        )
+                    )
+                )
+            }
+
+        } catch (e: Exception) {
+            Result.failure(
+                Exception("No se pudo conectar con el servidor: ${e.message}")
+            )
+        }
+    }
+
+    // Registrar usuario
+    suspend fun registrarUsuario(
+        name: String,
+        email: String,
+        phone: String,
+        password: String
+    ): Result<AuthResponse> {
+
+        return try {
+            val respuesta = api.registrarUsuario(
+                RegisterRequest(name, email, phone, password)
+            )
+
+            if (respuesta.isSuccessful) {
+                val datos = respuesta.body()
+
+                if (datos != null) {
+                    Result.success(datos)
+                } else {
+                    Result.failure(
+                        Exception("El servidor no ha devuelto datos")
+                    )
+                }
+            } else {
+                Result.failure(
+                    Exception(
+                        obtenerMensajeError(
+                            respuesta.code(),
+                            respuesta.errorBody()?.string()
+                        )
+                    )
+                )
+            }
+
+        } catch (e: Exception) {
+            Result.failure(
+                Exception("No se pudo conectar con el servidor: ${e.message}")
+            )
+        }
+    }
+
+    // Traducir códigos HTTP a mensajes
+
+    private fun obtenerMensajeError(
+        codigo: Int,
+        cuerpo: String?
+    ): String {
+
+        return try {
+
+            val json = JSONObject(cuerpo ?: "")
+            val error = json.getJSONObject("error")
+
+            val mensaje = error.optString(
+                "message",
+                "Error desconocido"
+            )
+
+            val campo = error.optString("field", "")
+
+            if (campo.isNotEmpty()) {
+                "$mensaje (Campo: $campo)"
+            } else {
+                mensaje
+            }
+
+        } catch (e: Exception) {
+
+            "Error del servidor (código $codigo)"
+        }
+    }
+
+}
