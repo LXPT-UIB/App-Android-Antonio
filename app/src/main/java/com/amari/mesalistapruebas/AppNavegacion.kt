@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.amari.mesalistapruebas.ui.BottomNavigationBar
+import com.amari.mesalistapruebas.ui.theme.ApiTestScreen
 import com.amari.mesalistapruebas.ui.theme.PantallaInicioNavegacion
 import com.amari.mesalistapruebas.ReservarNavegacion
 import com.amari.mesalistapruebas.ReservarScreen
@@ -68,7 +69,8 @@ fun AppNavigation() {
             }
 
             composable("inicio") {
-                PantallaInicioNavegacion(navController)
+                //PantallaInicioNavegacion(navController)
+                ApiTestScreen()
             }
 
             composable("reservar") {

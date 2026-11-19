@@ -54,4 +54,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.navigation:navigation-compose:2.9.6")
+    // Conexión con la API de Azure
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+
+// Conversión de JSON a objetos Kotlin
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+
 }

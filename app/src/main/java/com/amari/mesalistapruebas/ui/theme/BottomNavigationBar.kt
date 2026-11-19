@@ -88,10 +88,10 @@ fun BottomNavigationBar(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(30.dp))
                         .background(
                             if (seleccionado)
-                                Color.Black
+                                Color.DarkGray
                             else
                                 Color.Black
                         )
