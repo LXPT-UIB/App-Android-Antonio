@@ -1,4 +1,4 @@
-package com.amari.mesalistapruebas
+package com.amari.mesalistapruebas.pantallas
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -40,8 +40,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.amari.mesalistapruebas.ui.theme.MesaListaPruebasTheme
 import androidx.compose.runtime.*
+import com.amari.mesalistapruebas.R
+import com.amari.mesalistapruebas.data.repository.Client
 import kotlinx.coroutines.launch
 import com.amari.mesalistapruebas.data.repository.AuthRepository
+
+
+//Pantalla para iniciar sesión
 @Composable
 fun EntrarContenido(
         onEntrarClick: (String, String) -> Unit,
@@ -197,7 +202,8 @@ fun EntrarContenido(
 }
 
     @Composable
-    fun EntrarNavegacion(navController: NavController) {
+    fun EntrarNavegacion(navController: NavController,
+                         onLoginSuccess: (Client) -> Unit) {
 
         var mensajeError by remember { mutableStateOf("") }
         var cargando by remember { mutableStateOf(false) }
@@ -220,8 +226,11 @@ fun EntrarContenido(
                         password = contrasena
                     )
 
-                    resultado.onSuccess { respuesta ->
-
+                    resultado.onSuccess {
+                        // Devuelve la respuesta, que es un AuthResponse,
+                        // tal y como tenemos definido en AuthRepository
+                        respuesta ->
+                        onLoginSuccess(respuesta.user)
                         // Inicio de sesión correcto
                         // Aquí recibimos el token de sesión
 

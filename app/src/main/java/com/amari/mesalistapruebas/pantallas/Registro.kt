@@ -1,4 +1,4 @@
-package com.amari.mesalistapruebas
+package com.amari.mesalistapruebas.pantallas
 
 
 import androidx.compose.foundation.Image
@@ -41,6 +41,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.text.style.TextAlign
+import com.amari.mesalistapruebas.R
+import com.amari.mesalistapruebas.data.repository.AuthRepository
 
 @Composable
 fun RegistroContenido(
@@ -204,9 +207,10 @@ fun RegistroContenido(
             if (mensajeError.isNotEmpty()) {
                 Text(
                     text = mensajeError,
-                    color = Color.White,
+                    color = Color.Black,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
                 )
             }
 
@@ -239,7 +243,7 @@ fun RegistroNavegacion(navController: NavController) {
     var cargando by remember { mutableStateOf(false) }
 
     val repository = remember {
-        com.amari.mesalistapruebas.data.repository.AuthRepository()
+        AuthRepository()
     }
 
     val scope = rememberCoroutineScope()

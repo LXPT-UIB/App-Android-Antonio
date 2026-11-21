@@ -1,10 +1,13 @@
 package com.amari.mesalistapruebas.data.repository
 
-import com.amari.mesalistapruebas.data.model.AuthResponse
+
 import com.amari.mesalistapruebas.data.model.LoginRequest
 import com.amari.mesalistapruebas.data.model.RegisterRequest
 import com.amari.mesalistapruebas.data.remote.RetrofitClient
+import com.google.gson.annotations.SerializedName
 import org.json.JSONObject
+
+// Lo que involucre autenticación estará en esta clase
 class AuthRepository {
 
     private val api = RetrofitClient.api
@@ -16,11 +19,13 @@ class AuthRepository {
     ): Result<AuthResponse> {
 
         return try {
+            // Obtenemos la respuesta del servidor a partir del objeto LoginRequest
             val respuesta = api.iniciarSesion(
                 LoginRequest(email, password)
             )
 
             if (respuesta.isSuccessful) {
+                //0btenemos la respuesta
                 val datos = respuesta.body()
 
                 if (datos != null) {
@@ -121,3 +126,22 @@ class AuthRepository {
     }
 
 }
+
+data class AuthResponse(
+    val user: Client,
+    val session: Session
+)
+
+data class Client(
+    val name: String,
+    val email: String,
+    val phone: String?
+)
+
+data class Session(
+    val token: String,
+    val kind: String,
+
+    @SerializedName("expires_at")
+    val expiresAt: String
+)

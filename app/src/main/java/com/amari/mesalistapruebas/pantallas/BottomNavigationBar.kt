@@ -1,7 +1,6 @@
 
 package com.amari.mesalistapruebas.ui
 
-import android.text.Layout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,13 +20,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.amari.mesalistapruebas.R
 import com.amari.mesalistapruebas.ui.theme.MesaListaPruebasTheme
-import com.amari.mesalistapruebas.ui.theme.PantallaInicioContenido
 
+// Barra de navegación para navegar entre pantallas una vez se ha iniciado sesión
 data class NavigationItem(
     val title: String,
     val route: String,
@@ -43,7 +41,7 @@ fun BottomNavigationBar(
     val items = listOf(
         NavigationItem("Inicio", "inicio", Icons.Filled.Home),
         NavigationItem("Reservar", "reservar", Icons.Filled.Add),
-        NavigationItem("Reservas", "reservas", Icons.Filled.List),
+        NavigationItem("Reservas", "VerReservas", Icons.Filled.List),
         NavigationItem("Cuenta", "cuenta", Icons.Filled.Person)
     )
 

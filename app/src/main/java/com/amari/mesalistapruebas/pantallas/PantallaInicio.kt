@@ -1,4 +1,4 @@
-package com.amari.mesalistapruebas.ui.theme
+package com.amari.mesalistapruebas.pantallas
 
 
 import androidx.compose.foundation.Image
@@ -25,9 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.amari.mesalistapruebas.R
+import com.amari.mesalistapruebas.data.repository.Client
 
+// Pantalla principal una vez se ha iniciado sesión
 @Composable
 fun PantallaInicioContenido(
+    usuario: Client,
     onReservarClick: () -> Unit,
     onVerReservasClick: () -> Unit,
     onAnadirReservaClick: () -> Unit
@@ -55,7 +58,7 @@ fun PantallaInicioContenido(
 
             // Título
             Text(
-                text = "¡Bienvenido User!",
+                text = "¡Bienvenido ${usuario.name}!",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White,
@@ -124,10 +127,10 @@ fun PantallaInicioContenido(
 
 
 @Composable
-fun PantallaInicioNavegacion(navController: NavController) {
+fun PantallaInicioNavegacion(navController: NavController, usuario: Client) {
 
     PantallaInicioContenido(
-
+        usuario,
         // Botón Reservar
         onReservarClick = {
             navController.navigate("reservar")
@@ -150,8 +153,9 @@ fun PantallaInicioNavegacion(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun PantallaInicioPreview() {
-    MesaListaPruebasTheme {
+    _root_ide_package_.com.amari.mesalistapruebas.ui.theme.MesaListaPruebasTheme {
         PantallaInicioContenido(
+            usuario = Client("Juanillo", "Juanillo@example.com", "123456789"),
             onReservarClick = {},
             onVerReservasClick = {},
             onAnadirReservaClick = {}
