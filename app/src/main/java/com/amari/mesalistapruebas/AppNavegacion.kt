@@ -24,6 +24,8 @@ import com.amari.mesalistapruebas.pantallas.EntrarNavegacion
 import com.amari.mesalistapruebas.pantallas.RegistroNavegacion
 import androidx.compose.runtime.*
 import com.amari.mesalistapruebas.data.repository.Client
+import com.amari.mesalistapruebas.pantallas.RecuperarContenido
+import com.amari.mesalistapruebas.pantallas.RecuperarNavegacion
 import com.amari.mesalistapruebas.pantallas.VerReservasNavegacion
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -42,6 +44,7 @@ fun AppNavigation() {
     val rutasSinBarra = listOf(
         "bienvenida",
         "entrar",
+        "recuperar",
         "registro"
     )
 
@@ -75,6 +78,10 @@ fun AppNavigation() {
 
             composable("registro") {
                 RegistroNavegacion(navController)
+            }
+
+            composable("recuperar") {
+                RecuperarNavegacion(navController)
             }
 
             composable("inicio") {

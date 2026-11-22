@@ -255,7 +255,7 @@ fun EntrarContenido(
             },
 
             onOlvideContrasenaClick = {
-                // Pendiente de implementar
+                navController.navigate("recuperar")
             }
         )
     }

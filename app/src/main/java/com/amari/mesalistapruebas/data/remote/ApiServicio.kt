@@ -5,6 +5,7 @@ package com.amari.mesalistapruebas.data.remote
 
 import com.amari.mesalistapruebas.data.model.LoginRequest
 import com.amari.mesalistapruebas.data.model.RegisterRequest
+import com.amari.mesalistapruebas.data.model.RespuestaRecuperacion
 import com.amari.mesalistapruebas.data.repository.AuthResponse
 
 import retrofit2.Response
@@ -38,5 +39,9 @@ interface ApiService {
         @Body datos: RegisterRequest
     ): Response<AuthResponse>
 
+    @POST("auth/forgot")
+    suspend fun olvidoContrasena(
+        @Body body: Map<String, String>
+    ): Response<RespuestaRecuperacion>
 }
 

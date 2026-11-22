@@ -94,6 +94,52 @@ class AuthRepository {
         }
     }
 
+
+    suspend fun olvidoContrasena(email: String): Result<Unit> {
+
+        return try {
+
+            val respuesta = api.olvidoContrasena(
+                mapOf("email" to email)
+            )
+
+            if (respuesta.isSuccessful) {
+
+                val datos = respuesta.body()
+
+                if (datos != null && datos.ok) {
+                    Result.success(Unit)
+                } else {
+                    Result.failure(
+                        Exception("No se pudo procesar la solicitud")
+                    )
+                }
+
+            } else {
+
+                Result.failure(
+                    Exception(
+                        obtenerMensajeError(
+                            respuesta.code(),
+                            respuesta.errorBody()?.string()
+                        )
+                    )
+                )
+            }
+
+        } catch (e: Exception) {
+
+            Result.failure(
+                Exception(
+                    "No se pudo conectar con el servidor: ${e.message}"
+                )
+            )
+        }
+    }
+
+
+
+
     // Traducir códigos HTTP a mensajes
 
     private fun obtenerMensajeError(
@@ -124,6 +170,8 @@ class AuthRepository {
             "Error del servidor (código $codigo)"
         }
     }
+
+
 
 }
 
