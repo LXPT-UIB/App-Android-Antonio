@@ -138,7 +138,7 @@ fun PantallaInicioNavegacion(navController: NavController, usuario: Client) {
 
         // Botón Ver reservas
         onVerReservasClick = {
-            navController.navigate("verReservas")
+            navController.navigate("VerReservas")
         },
 
         // Botón Añadir reserva

@@ -5,6 +5,7 @@ package com.amari.mesalistapruebas.data.remote
 
 import com.amari.mesalistapruebas.data.model.LoginRequest
 import com.amari.mesalistapruebas.data.model.RegisterRequest
+import com.amari.mesalistapruebas.data.model.ReservationsResponse
 import com.amari.mesalistapruebas.data.model.RespuestaRecuperacion
 import com.amari.mesalistapruebas.data.repository.AuthResponse
 
@@ -43,5 +44,9 @@ interface ApiService {
     suspend fun olvidoContrasena(
         @Body body: Map<String, String>
     ): Response<RespuestaRecuperacion>
+
+    @GET("reservations")
+    suspend fun obtenerReservas(): Response<ReservationsResponse>
+
 }
 

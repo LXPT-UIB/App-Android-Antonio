@@ -31,12 +31,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.amari.mesalistapruebas.R
+import com.amari.mesalistapruebas.data.remote.RetrofitClient
 import com.amari.mesalistapruebas.ui.theme.MesaListaPruebasTheme
 //Pantalla al abrir la aplicacion
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Inicializamos Retrofit antes de utilizar la API
+        RetrofitClient.inicializar(applicationContext)
         enableEdgeToEdge()
         setContent {
             MesaListaPruebasTheme {

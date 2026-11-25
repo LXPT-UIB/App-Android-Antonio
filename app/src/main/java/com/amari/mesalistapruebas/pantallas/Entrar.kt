@@ -1,5 +1,6 @@
 package com.amari.mesalistapruebas.pantallas
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,7 @@ import com.amari.mesalistapruebas.R
 import com.amari.mesalistapruebas.data.repository.Client
 import kotlinx.coroutines.launch
 import com.amari.mesalistapruebas.data.repository.AuthRepository
+import androidx.compose.ui.platform.LocalContext
 
 
 //Pantalla para iniciar sesión
@@ -210,6 +212,7 @@ fun EntrarContenido(
 
         val repository = remember { AuthRepository() }
         val scope = rememberCoroutineScope()
+        val context = LocalContext.current
 
         EntrarContenido(
             mensajeError = mensajeError,
@@ -221,19 +224,30 @@ fun EntrarContenido(
                     cargando = true
                     mensajeError = ""
 
+                    //Se realiza la petición de inicio de sesion
                     val resultado = repository.iniciarSesion(
                         email = correo,
                         password = contrasena
                     )
 
-                    resultado.onSuccess {
-                        // Devuelve la respuesta, que es un AuthResponse,
-                        // tal y como tenemos definido en AuthRepository
-                        respuesta ->
-                        onLoginSuccess(respuesta.user)
-                        // Inicio de sesión correcto
-                        // Aquí recibimos el token de sesión
+                    // El servidor devuelve respuesta, conteniendo los datos
+                    // del usuario de la sesion
+                    resultado.onSuccess { respuesta ->
 
+                        // Creamos un valor preferencias
+                        val preferencias = context.getSharedPreferences(
+                            "MesaListaSesion",
+                            Context.MODE_PRIVATE
+                        )
+                        // Guardamos el token de la sesión
+                        preferencias.edit()
+                            .putString("token", respuesta.session.token)
+                            .apply()
+
+                        // Devolvemos los datos del usuario
+                        onLoginSuccess(respuesta.user)
+
+                        // Navegamos a la pantalla de inicio
                         navController.navigate("inicio") {
                             popUpTo("entrar") {
                                 inclusive = true

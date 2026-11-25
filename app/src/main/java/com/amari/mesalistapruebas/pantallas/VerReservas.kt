@@ -1,7 +1,6 @@
 
 package com.amari.mesalistapruebas.pantallas
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,15 +11,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.amari.mesalistapruebas.data.repository.Client
-import com.amari.mesalistapruebas.ui.theme.MesaListaPruebasTheme
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import com.amari.mesalistapruebas.R
+import com.amari.mesalistapruebas.data.model.ReservationsResponse
+import com.amari.mesalistapruebas.data.remote.RetrofitClient
+import androidx.compose.runtime.*
+import com.amari.mesalistapruebas.data.repository.ReservationClient
 
 // Colores de MesaLista
 private val Crema = Color(0xFFF5F0EA)
@@ -28,21 +29,14 @@ private val Cafe = Color(0xFF795548)
 private val Verde = Color(0xFF4D8060)
 private val Gris = Color(0xFF777777)
 
-// Modelo visual de una reserva
-data class ReservaUi(
-    val restaurante: String,
-    val fecha: String,
-    val hora: String,
-    val personas: Int,
-    val estado: String
-)
+
 
 
 
 @Composable
 fun VerReservasContenido(
     nombreUsuario: String,
-    reservas: List<ReservaUi>
+    reservas: ReservationsResponse
 ) {
 
     Box(
@@ -75,7 +69,7 @@ fun VerReservasContenido(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Hola, $nombreUsuario. Aquí tienes tus reservas.",
+            text = "Hola, $nombreUsuario. \nAquí tienes tus reservas.",
             fontSize = 15.sp,
             color = Color.LightGray
         )
@@ -84,7 +78,7 @@ fun VerReservasContenido(
 
         // Contador de reservas
         Text(
-            text = "${reservas.size} reservas",
+            text = "${reservas.reservations.size} reservas",
             fontSize = 17.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.LightGray
@@ -93,7 +87,7 @@ fun VerReservasContenido(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Lista desplazable
-        if (reservas.isEmpty()) {
+        if (reservas.reservations.isEmpty()) {
 
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -114,7 +108,7 @@ fun VerReservasContenido(
                 modifier = Modifier.fillMaxSize()
             ) {
 
-                items(reservas) { reserva ->
+                items(reservas.reservations) { reserva ->
 
                     TarjetaReserva(reserva = reserva)
                 }
@@ -129,40 +123,59 @@ fun VerReservasContenido(
 @Composable
 fun VerReservasNavegacion(usuario: Client) {
 
-    // Datos de ejemplo.
-    // Más adelante los sustituiremos por las reservas de la API.
-    val reservas = listOf(
-        ReservaUi(
-            restaurante = "Restaurante La Terraza",
-            fecha = "25 noviembre 2026",
-            hora = "14:00",
-            personas = 2,
-            estado = "Confirmada"
-        ),
-        ReservaUi(
-            restaurante = "Mar y Tierra",
-            fecha = "28 noviembre 2026",
-            hora = "21:00",
-            personas = 4,
-            estado = "Pendiente"
-        ),
-        ReservaUi(
-            restaurante = "Can Costa",
-            fecha = "2 diciembre 2026",
-            hora = "13:30",
-            personas = 3,
-            estado = "Confirmada"
-        )
-    )
+    var reservas by remember {
+        mutableStateOf<ReservationsResponse?>(null)
+    }
 
-    VerReservasContenido(
-        nombreUsuario = usuario.name,
-        reservas = reservas
-    )
+    var cargando by remember {
+        mutableStateOf(true)
+    }
+
+    var error by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        try {
+            // Se hace la petición al servidor
+            val respuesta = RetrofitClient.api.obtenerReservas()
+            // Respuesta del servidor
+            if (respuesta.isSuccessful) {
+                reservas = respuesta.body()
+                    ?: ReservationsResponse(emptyList())
+            } else {
+                error = "Error al obtener las reservas: ${respuesta.code()}"
+            }
+
+        } catch (e: Exception) {
+            error = "Error de conexión: ${e.message}"
+        } finally {
+            cargando = false
+        }
+    }
+
+    when {
+        // Mientras llega la respuesta ponemos una pantalla de carga
+        // Actúa como un 'if'
+        cargando -> {
+            CircularProgressIndicator()
+        }
+        // Actúa como un 'if', si error no es null, se imprime el error
+        error != null -> {
+            Text(text = error!!)
+        }
+        // Tenemos respuesta y sin error
+        else -> {
+            VerReservasContenido(
+                nombreUsuario = usuario.name,
+                reservas = reservas ?: ReservationsResponse(emptyList())
+            )
+        }
+    }
 }
 
 @Composable
-fun TarjetaReserva(reserva: ReservaUi) {
+fun TarjetaReserva(reserva: ReservationClient) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -187,7 +200,7 @@ fun TarjetaReserva(reserva: ReservaUi) {
             ) {
 
                 Text(
-                    text = reserva.restaurante,
+                    text = "Restaurante",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Cafe,
@@ -198,20 +211,35 @@ fun TarjetaReserva(reserva: ReservaUi) {
 
                 Surface(
                     shape = RoundedCornerShape(50.dp),
-                    color = if (reserva.estado == "Confirmada") {
-                        Color(0xFFE3F0E6)
-                    } else {
-                        Color(0xFFFFF0D9)
+                    color = when (reserva.status) {
+                        "confirmed" -> Color(0xFFE3F0E6)
+                        "seated" -> Color(0xFFE3E8F5)
+                        "completed" -> Color(0xFFE3F0E6)
+                        "cancelled" -> Color(0xFFF5DADA)
+                        "no_show" -> Color(0xFFF5DADA)
+                        "pending_payment" -> Color(0xFFFFF0D9)
+                        else -> Color.LightGray
                     }
                 ) {
                     Text(
-                        text = reserva.estado,
+                        text = when (reserva.status) {
+                            "confirmed" -> "Confirmada"
+                            "seated" -> "Sentado"
+                            "completed" -> "Completada"
+                            "cancelled" -> "Cancelada"
+                            "no_show" -> "No presentado"
+                            "pending_payment" -> "Pago pendiente"
+                            else -> reserva.status
+                        },
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (reserva.estado == "Confirmada") {
-                            Verde
-                        } else {
-                            Color(0xFFAD782A)
+                        color = when (reserva.status) {
+                            "confirmed" -> Verde
+                            "seated" -> Color(0xFF456A91)
+                            "completed" -> Verde
+                            "cancelled", "no_show" -> Color(0xFFAD4545)
+                            "pending_payment" -> Color(0xFFAD782A)
+                            else -> Color.DarkGray
                         },
                         modifier = Modifier.padding(
                             horizontal = 10.dp,
@@ -219,13 +247,14 @@ fun TarjetaReserva(reserva: ReservaUi) {
                         )
                     )
                 }
+                }
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
             // Fecha
             Text(
-                text = "📅  ${reserva.fecha}",
+                text = "📅  ${reserva.date}",
                 fontSize = 15.sp,
                 color = Color.DarkGray
             )
@@ -234,7 +263,7 @@ fun TarjetaReserva(reserva: ReservaUi) {
 
             // Hora
             Text(
-                text = "🕒  ${reserva.hora}",
+                text = "🕒  ${reserva.time}",
                 fontSize = 15.sp,
                 color = Color.DarkGray
             )
@@ -243,14 +272,14 @@ fun TarjetaReserva(reserva: ReservaUi) {
 
             // Número de personas
             Text(
-                text = "👥  ${reserva.personas} personas",
+                text = "👥  ${reserva.party} personas",
                 fontSize = 15.sp,
                 color = Color.DarkGray
             )
         }
     }
-}
 
+/*
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun VerReservasPreview() {
@@ -284,3 +313,5 @@ fun VerReservasPreview() {
         )
     }
 }
+
+ */

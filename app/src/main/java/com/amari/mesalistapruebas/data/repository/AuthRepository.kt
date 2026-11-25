@@ -193,3 +193,25 @@ data class Session(
     @SerializedName("expires_at")
     val expiresAt: String
 )
+
+data class ReservationClient(
+    val id: Int,
+    val status: String,
+    val source: String?,
+    val date: String,
+    val time: String,
+    val end_time: String?,
+    val party: Int,
+    val table: Int?,
+    val tables: List<Int>?,
+    val zone: String?,
+    val menu_options: Any?,
+    val note: String?,
+    val deposit: Any?,
+    val modifiable: Boolean?,
+    val deadline: String?,
+    val arrival_window: Any?,
+    val qr: String?,
+    val group: Any?,
+    val payable: Any?
+)
