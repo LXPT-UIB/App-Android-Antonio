@@ -1,6 +1,5 @@
 package com.amari.mesalistapruebas.pantallas
 
-
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -9,8 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,11 +16,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.amari.mesalistapruebas.R
+import com.amari.mesalistapruebas.data.remote.RetrofitClient
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -31,21 +28,39 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun ReservarScreen() {
-
-    // Colores
+fun ReservarScreen(
+    onContinuarClick: (fechaIso: String, hora: String, personas: Int) -> Unit = { _, _, _ -> }
+) {
     val cafe = Color(0xFF795548)
     val fondo = Color(0xFFF5F0EA)
     val blanco = Color.White
 
-    // Variables de selección
     var mostrarCalendario by remember { mutableStateOf(false) }
     var fechaSeleccionada by remember { mutableStateOf<Long?>(null) }
     var personas by remember { mutableIntStateOf(2) }
     var horaSeleccionada by remember { mutableStateOf<String?>(null) }
 
-    val calendario = rememberDatePickerState()
+    // Estados de red para disponibilidad (RF-06)
+    var horasDisponibles by remember { mutableStateOf<List<String>>(emptyList()) }
+    var cargandoHoras by remember { mutableStateOf(false) }
+    var errorHoras by remember { mutableStateOf<String?>(null) }
 
+    val hoyUtcMillis = remember {
+        java.time.LocalDate.now()
+            .atStartOfDay(ZoneOffset.UTC)
+            .toInstant()
+            .toEpochMilli()
+    }
+
+    val calendario = rememberDatePickerState(
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis >= hoyUtcMillis
+            }
+        }
+    )
+
+    // Fecha visual para el usuario (dd/MM/yyyy)
     val fechaTexto = fechaSeleccionada?.let {
         Instant.ofEpochMilli(it)
             .atZone(ZoneOffset.UTC)
@@ -53,18 +68,38 @@ fun ReservarScreen() {
             .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
     } ?: "Seleccionar día"
 
-    val horas = listOf(
-        "12:00", "12:30", "13:00", "13:30",
-        "14:00", "14:30", "15:00", "15:30",
-        "19:00", "19:30", "20:00", "20:30",
-        "21:00", "21:30", "22:00", "22:30"
-    )
+    // Fecha ISO para la API (YYYY-MM-DD)
+    val fechaIso = fechaSeleccionada?.let {
+        Instant.ofEpochMilli(it)
+            .atZone(ZoneOffset.UTC)
+            .toLocalDate()
+            .format(DateTimeFormatter.ISO_LOCAL_DATE)
+    }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    // Consultar horas libres automáticamente al cambiar fecha o comensales
+    LaunchedEffect(fechaIso, personas) {
+        if (fechaIso != null) {
+            cargandoHoras = true
+            errorHoras = null
+            horaSeleccionada = null
+            try {
+                val respuesta = RetrofitClient.api.consultarDisponibilidad(fechaIso, personas)
+                if (respuesta.isSuccessful) {
+                    horasDisponibles = respuesta.body()?.times ?: emptyList()
+                } else {
+                    horasDisponibles = emptyList()
+                    errorHoras = "No se pudo consultar disponibilidad (${respuesta.code()})"
+                }
+            } catch (e: Exception) {
+                horasDisponibles = emptyList()
+                errorHoras = "Error de conexión"
+            } finally {
+                cargandoHoras = false
+            }
+        }
+    }
 
-        // Imagen de fondo
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(R.drawable.fondo_marron),
             contentDescription = "Imagen de fondo",
@@ -75,26 +110,17 @@ fun ReservarScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    start = 20.dp,
-                    end = 20.dp,
-                    top = 25.dp,
-                    bottom = 90.dp
-                ),
+                .padding(start = 20.dp, end = 20.dp, top = 25.dp, bottom = 90.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             // 1. SELECCIÓN DE FECHA
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.7f),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = blanco
-                ),
+                colors = CardDefaults.cardColors(containerColor = blanco),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
@@ -104,43 +130,32 @@ fun ReservarScreen() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Text(
                         text = "¿Qué día?",
                         fontSize = 23.sp,
                         fontWeight = FontWeight.Bold,
                         color = cafe
                     )
-
                     Spacer(modifier = Modifier.height(20.dp))
-
                     FilledTonalButton(
-                        onClick = {
-                            mostrarCalendario = true
-                        },
+                        onClick = { mostrarCalendario = true },
                         colors = ButtonDefaults.filledTonalButtonColors(
                             containerColor = fondo,
                             contentColor = cafe
                         )
                     ) {
-                        Text(
-                            text = fechaTexto,
-                            fontSize = 17.sp
-                        )
+                        Text(text = fechaTexto, fontSize = 17.sp)
                     }
                 }
             }
 
             // 2. SELECCIÓN DE PERSONAS
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.7f),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = blanco
-                ),
+                colors = CardDefaults.cardColors(containerColor = blanco),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
@@ -150,27 +165,19 @@ fun ReservarScreen() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Text(
                         text = "¿Cuántos sois?",
                         fontSize = 23.sp,
                         fontWeight = FontWeight.Bold,
                         color = cafe
                     )
-
                     Spacer(modifier = Modifier.height(20.dp))
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-
-                        // Botón menos
-
                         FilledTonalButton(
-                            onClick = {
-                                if (personas > 1) personas--
-                            },
+                            onClick = { if (personas > 1) personas-- },
                             enabled = personas > 1,
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.filledTonalButtonColors(
@@ -178,13 +185,8 @@ fun ReservarScreen() {
                                 contentColor = cafe
                             )
                         ) {
-                            Text(
-                                text = "−",
-                                fontSize = 25.sp
-                            )
+                            Text(text = "−", fontSize = 25.sp)
                         }
-
-                        // Número de personas
 
                         Text(
                             text = personas.toString(),
@@ -194,37 +196,27 @@ fun ReservarScreen() {
                             color = cafe
                         )
 
-                        // Botón más
-
                         FilledTonalButton(
-                            onClick = {
-                                personas++
-                            },
+                            onClick = { personas++ },
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = fondo,
                                 contentColor = cafe
                             )
                         ) {
-                            Text(
-                                text = "+",
-                                fontSize = 25.sp
-                            )
+                            Text(text = "+", fontSize = 25.sp)
                         }
                     }
                 }
             }
 
             // 3. SELECCIÓN DE HORAS
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.9f),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = blanco
-                ),
+                colors = CardDefaults.cardColors(containerColor = blanco),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
@@ -232,7 +224,6 @@ fun ReservarScreen() {
                         .fillMaxSize()
                         .padding(14.dp)
                 ) {
-
                     Text(
                         text = "Horas libres",
                         fontSize = 23.sp,
@@ -242,75 +233,90 @@ fun ReservarScreen() {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Zona desplazable de horarios
-
-                    Column(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState())
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
                     ) {
-
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-
-                            horas.forEach { hora ->
-
-                                val seleccionada = horaSeleccionada == hora
-
-                                Surface(
-                                    modifier = Modifier.clickable {
-                                        horaSeleccionada = hora
-                                    },
-                                    shape = RoundedCornerShape(50),
-                                    color = if (seleccionada) cafe else fondo
+                        when {
+                            fechaIso == null -> {
+                                Text("Selecciona primero una fecha", color = Color.Gray)
+                            }
+                            cargandoHoras -> {
+                                CircularProgressIndicator(color = cafe)
+                            }
+                            errorHoras != null -> {
+                                Text(errorHoras!!, color = Color(0xFFAD4545))
+                            }
+                            horasDisponibles.isEmpty() -> {
+                                Text("No hay horas disponibles ese día", color = Color.Gray)
+                            }
+                            else -> {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(rememberScrollState())
                                 ) {
-                                    Text(
-                                        text = hora,
-                                        modifier = Modifier.padding(
-                                            horizontal = 18.dp,
-                                            vertical = 11.dp
-                                        ),
-                                        color = if (seleccionada) blanco else cafe,
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        horasDisponibles.forEach { hora ->
+                                            val seleccionada = horaSeleccionada == hora
+                                            Surface(
+                                                modifier = Modifier.clickable {
+                                                    horaSeleccionada = hora
+                                                },
+                                                shape = RoundedCornerShape(50),
+                                                color = if (seleccionada) cafe else fondo
+                                            ) {
+                                                Text(
+                                                    text = hora,
+                                                    modifier = Modifier.padding(
+                                                        horizontal = 18.dp,
+                                                        vertical = 11.dp
+                                                    ),
+                                                    color = if (seleccionada) blanco else cafe,
+                                                    fontSize = 15.sp,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-            val onConfirmarReservaClick = null
+
+            // Botón para pasar a la segunda pantalla (Opciones de menú + Nota)
             FilledTonalButton(
-                onClick = { onConfirmarReservaClick },
-                modifier = Modifier
-                    .height(60.dp),
+                onClick = {
+                    if (fechaIso != null && horaSeleccionada != null) {
+                        onContinuarClick(fechaIso, horaSeleccionada!!, personas)
+                    }
+                },
+                enabled = fechaIso != null && horaSeleccionada != null,
+                modifier = Modifier.height(60.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White,
-                    contentColor = Color.Black
-                ),
+                    contentColor = Color(0xFF5D4037)
+                )
             ) {
                 Text(
-                    text = "Confirmar Reserva",
+                    text = "Continuar",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF5D4037)
+                    fontWeight = FontWeight.Bold
                 )
             }
-
         }
     }
-    // VENTANA DEL CALENDARIO
 
     if (mostrarCalendario) {
-
         DatePickerDialog(
-            onDismissRequest = {
-                mostrarCalendario = false
-            },
+            onDismissRequest = { mostrarCalendario = false },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -322,34 +328,22 @@ fun ReservarScreen() {
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarCalendario = false
-                    }
-                ) {
+                TextButton(onClick = { mostrarCalendario = false }) {
                     Text("Cancelar", color = cafe)
                 }
             }
         ) {
-            DatePicker(
-                state = calendario
-            )
+            DatePicker(state = calendario)
         }
     }
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReservarNavegacion(navController: NavController) {
-    ReservarScreen()
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
-@Composable
-fun ReservarScreenPreview() {
-    _root_ide_package_.com.amari.mesalistapruebas.ui.theme.MesaListaPruebasTheme {
-        ReservarScreen()
-    }
+    ReservarScreen(
+        onContinuarClick = { fechaIso, hora, personas ->
+            navController.navigate("detalles_reserva/$fechaIso/$hora/$personas")
+        }
+    )
 }

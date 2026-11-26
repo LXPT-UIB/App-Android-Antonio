@@ -21,6 +21,7 @@ import com.amari.mesalistapruebas.R
 import com.amari.mesalistapruebas.data.model.ReservationsResponse
 import com.amari.mesalistapruebas.data.remote.RetrofitClient
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.style.TextAlign
 import com.amari.mesalistapruebas.data.repository.ReservationClient
 
 // Colores de MesaLista
@@ -189,7 +190,10 @@ fun TarjetaReserva(reserva: ReservationClient) {
     ) {
 
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             // Nombre del restaurante y estado
@@ -199,15 +203,13 @@ fun TarjetaReserva(reserva: ReservationClient) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
+                // Fecha
                 Text(
-                    text = "Restaurante",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Cafe,
-                    modifier = Modifier.weight(1f)
+                    text = "📅  ${reserva.date}",
+                    fontSize = 15.sp,
+                    color = Color.DarkGray,
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
 
                 Surface(
                     shape = RoundedCornerShape(50.dp),
@@ -250,31 +252,26 @@ fun TarjetaReserva(reserva: ReservationClient) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Fecha
-            Text(
-                text = "📅  ${reserva.date}",
-                fontSize = 15.sp,
-                color = Color.DarkGray
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
+            //Spacer(modifier = Modifier.height(10.dp))
 
             // Hora
             Text(
                 text = "🕒  ${reserva.time}",
                 fontSize = 15.sp,
-                color = Color.DarkGray
+                color = Color.DarkGray,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Número de personas
             Text(
                 text = "👥  ${reserva.party} personas",
                 fontSize = 15.sp,
-                color = Color.DarkGray
+                color = Color.DarkGray,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
         }
     }

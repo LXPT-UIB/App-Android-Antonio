@@ -202,8 +202,8 @@ data class ReservationClient(
     val time: String,
     val end_time: String?,
     val party: Int,
-    val table: Int?,
-    val tables: List<Int>?,
+    val table: String?,
+    val tables: List<String>?,
     val zone: String?,
     val menu_options: Any?,
     val note: String?,
@@ -214,4 +214,41 @@ data class ReservationClient(
     val qr: String?,
     val group: Any?,
     val payable: Any?
+)
+
+//Clase que se utiliza para ver la disponibilidad de horas
+data class AvailabilityResponse(
+    val times: List<String> = emptyList()
+)
+
+//Se utiliza para crear una reserva
+data class CreateReservationRequest(
+    val date: String,
+    val time: String,
+    val party: Int,
+    val note: String? = null,
+    @SerializedName("menu_options")
+    val menuOptions: List<String>? = null,
+    val consent: Boolean? = null
+)
+
+//Es una respuesta del servidor que confirma la reserva
+data class CreateReservationResponse(
+    val reservation: ReservationClient
+)
+
+//Sacar la configuración del restaurante
+data class ConfigResponse(
+    @SerializedName("menu_options")
+    val menuOptions: List<String>? = emptyList(),
+
+    // Otros parámetros habituales de /config (opcionales por si los necesitas más adelante)
+    @SerializedName("max_party")
+    val maxParty: Int? = null,
+
+    @SerializedName("deposit_min_party")
+    val depositMinParty: Int? = null,
+
+    @SerializedName("deposit_amount")
+    val depositAmount: Double? = null
 )
