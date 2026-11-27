@@ -343,7 +343,7 @@ fun ReservarScreen(
 fun ReservarNavegacion(navController: NavController) {
     ReservarScreen(
         onContinuarClick = { fechaIso, hora, personas ->
-            navController.navigate("detalles_reserva/$fechaIso/$hora/$personas")
+            navController.navigate("DetallesReserva/${fechaIso}/${hora}/${personas}")
         }
     )
 }

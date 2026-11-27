@@ -60,4 +60,6 @@ dependencies {
 // Conversión de JSON a objetos Kotlin
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 
+    implementation("com.google.zxing:core:3.5.4")
+
 }

@@ -223,12 +223,15 @@ data class AvailabilityResponse(
 
 //Se utiliza para crear una reserva
 data class CreateReservationRequest(
+    // Identificador único para evitar duplicados de reserva
+    @SerializedName("request_id")
+    val requestId: String,
     val date: String,
     val time: String,
     val party: Int,
     val note: String? = null,
     @SerializedName("menu_options")
-    val menuOptions: List<String>? = null,
+    val menuOptions: List<Int>? = null,
     val consent: Boolean? = null
 )
 
@@ -240,7 +243,7 @@ data class CreateReservationResponse(
 //Sacar la configuración del restaurante
 data class ConfigResponse(
     @SerializedName("menu_options")
-    val menuOptions: List<String>? = emptyList(),
+    val menuOptions: List<MenuOption>? = emptyList(),
 
     // Otros parámetros habituales de /config (opcionales por si los necesitas más adelante)
     @SerializedName("max_party")
@@ -251,4 +254,9 @@ data class ConfigResponse(
 
     @SerializedName("deposit_amount")
     val depositAmount: Double? = null
+)
+
+data class MenuOption(
+    val id: Int,
+    val name: String
 )

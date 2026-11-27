@@ -25,9 +25,11 @@ import com.amari.mesalistapruebas.pantallas.EntrarNavegacion
 import com.amari.mesalistapruebas.pantallas.RegistroNavegacion
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.amari.mesalistapruebas.data.repository.Client
 import com.amari.mesalistapruebas.pantallas.CuentaNavegacion
-import com.amari.mesalistapruebas.pantallas.RecuperarContenido
+import com.amari.mesalistapruebas.pantallas.DetallesReservaNavegacion
 import com.amari.mesalistapruebas.pantallas.RecuperarNavegacion
 import com.amari.mesalistapruebas.pantallas.VerReservasNavegacion
 
@@ -107,6 +109,26 @@ fun AppNavigation() {
                         usuario = usuario
                     )
                 }
+            }
+
+            composable(
+                route = "DetallesReserva/{fecha}/{hora}/{personas}",
+                arguments = listOf(
+                    navArgument("fecha") { type = NavType.StringType },
+                    navArgument("hora") { type = NavType.StringType },
+                    navArgument("personas") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val fecha = backStackEntry.arguments?.getString("fecha") ?: ""
+                val hora = backStackEntry.arguments?.getString("hora") ?: ""
+                val personas = backStackEntry.arguments?.getInt("personas") ?: 2
+
+                DetallesReservaNavegacion(
+                    navController = navController,
+                    fechaIso = fecha,
+                    hora = hora,
+                    personas = personas
+                )
             }
 
             composable("cuenta") {

@@ -9,6 +9,7 @@ import com.amari.mesalistapruebas.data.model.ReservationsResponse
 import com.amari.mesalistapruebas.data.model.RespuestaRecuperacion
 import com.amari.mesalistapruebas.data.repository.AuthResponse
 import com.amari.mesalistapruebas.data.repository.AvailabilityResponse
+import com.amari.mesalistapruebas.data.repository.ConfigResponse
 import com.amari.mesalistapruebas.data.repository.CreateReservationRequest
 import com.amari.mesalistapruebas.data.repository.CreateReservationResponse
 
@@ -29,6 +30,8 @@ import retrofit2.http.Query
 
 interface ApiService {
 
+    @GET("config")
+    suspend fun obtenerConfiguracion(): Response<ConfigResponse>
     // Inicio de sesión
     @POST("auth/login")
     suspend fun iniciarSesion(
@@ -59,8 +62,7 @@ interface ApiService {
     //Crear reserva
     @POST("reservations")
     suspend fun crearReserva(
-        @Body datos: CreateReservationRequest,
-        @Header("Idempotency-Key") idempotencyKey: String? = null
+        @Body datos: CreateReservationRequest
     ): Response<CreateReservationResponse>//Esto se utiliza para que en caso de que se envíen peticiones
     // duplicadas al servidor, este actúe únicamente una vez.
 
